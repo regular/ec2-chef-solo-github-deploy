@@ -21,3 +21,4 @@ rm xxx-git_url
 
 echo "Creating EC2 instance"
 ec2-run-instances ami-ca0e02be --instance-type m1.small --key $EC2_KEYNAME --user-data-file bootstrap.sh
+ec2-describe-instances --show-empty-fields|grep "INSTANCE"|awk '{ print $2,$6,$17}'
