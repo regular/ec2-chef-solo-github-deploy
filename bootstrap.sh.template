@@ -5,33 +5,44 @@ set -e -x
 
 #Config
 export DEBIAN_FRONTEND=noninteractive
-export CHEF_COOKBOOK_PATH=/tmp/cheftime/cookbooks
+export CHEF_COOKBOOK_PATH=/tmp/cheftime/repo/chef/cookbooks
+export CHEF_ROLE_PATH=/tmp/cheftime/repo/chef/roles
 export CHEF_FILE_CACHE_PATH=/tmp/cheftime
-
+export REPOSITORY_URL=XXX-REPOSITORY_URL-XXX
+export ROLE=XXX-ROLE-XXX
 
 mkdir -p $CHEF_FILE_CACHE_PATH
-mkdir -p $CHEF_COOKBOOK_PATH
 
 #chef solo ruby file
 echo "file_cache_path \"$CHEF_FILE_CACHE_PATH\"
 cookbook_path \"$CHEF_COOKBOOK_PATH\"
-role_path []
+role_path \"$CHEF_ROLE_PATH\"
 log_level :debug" > $CHEF_FILE_CACHE_PATH/solo.rb
 
+
+# create an ssh-wrapper that uses a special private key
 (
 cat <<'EOP'
 #!/bin/bash
-ssh -i $CHEF_FILE_CACHE_PATH/git_id $@" 
+ssh -i git_id -o StrictHostKeyChecking=no ${@}
+exit $?
 EOP
 ) > $CHEF_FILE_CACHE_PATH/git-ssh-wrapper
+chmod 775 $CHEF_FILE_CACHE_PATH/git-ssh-wrapper
 
 (
 cat <<'EOP'
-YOUR-KEY-DATA-HERE
+XXX-YOUR-KEY-DATA-HERE-XXX
 EOP
 ) > $CHEF_FILE_CACHE_PATH/git_id
+chmod 700 $CHEF_FILE_CACHE_PATH/git_id
 
 apt-get update
 apt-get --no-install-recommends -y install git build-essential ruby ruby-dev rubygems libopenssl-ruby
-gem install --no-rdoc --no-ri chef --version=10.16.6
+gem install --no-rdoc --no-ri chef
 echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/lib/gems/1.8/bin"' > /etc/environment
+
+cd $CHEF_FILE_CACHE_PATH
+GIT_SSH='./git-ssh-wrapper' git clone $REPOSITORY_URL repo
+
+sudo chef-solo -c solo.rb -o "role[$ROLE]" 2>&1 | logger -t chef-solo 

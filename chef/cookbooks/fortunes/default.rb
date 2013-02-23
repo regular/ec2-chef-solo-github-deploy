@@ -1,0 +1,1 @@
+package("fortunes-ubuntu-server")
