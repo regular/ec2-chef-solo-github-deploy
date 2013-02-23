@@ -20,5 +20,8 @@ sed "s/XXX-ROLE-XXX/$1/" > bootstrap.sh
 rm xxx-git_url
 
 echo "Creating EC2 instance"
-ec2-run-instances ami-ca0e02be --instance-type m1.small --key $EC2_KEYNAME --user-data-file bootstrap.sh
-ec2-describe-instances --show-empty-fields|grep "INSTANCE"|awk '{ print $2,$6,$17}'
+export info=$(ec2-run-instances --show-empty-fields ami-ca0e02be --instance-type m1.small --key $EC2_KEYNAME --user-data-file bootstrap.sh|grep "INSTANCE"|awk '{ print $2,$3,$10,$12}')
+echo $info
+instance=$(echo $info|awk '{ print $1 }')
+sleep 4
+ec2-describe-instances --show-empty-fields|grep "$instance"|awk '{ print $2,$6,$17}'
