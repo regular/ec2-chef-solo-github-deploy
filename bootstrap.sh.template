@@ -39,7 +39,7 @@ chmod 700 $CHEF_FILE_CACHE_PATH/git_id
 
 apt-get update
 apt-get --no-install-recommends -y install git build-essential ruby ruby-dev rubygems libopenssl-ruby
-gem install --no-rdoc --no-ri chef
+gem install --no-rdoc --no-ri --version 10.16.6 chef
 echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/lib/gems/1.8/bin"' > /etc/environment
 
 cd $CHEF_FILE_CACHE_PATH
